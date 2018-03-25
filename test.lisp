@@ -8,6 +8,10 @@
 		     :if-does-not-exist :create
 		     :element-type '(unsigned-byte 8))
   (with-asm-out (out)
+    (db 1 2 3 4 5 6 7)
+    (org #x100)
+    (dw 1 2 3 4 5 6 7)
+    (org #x200)
     (label :start)
     (nop)
     (nop)

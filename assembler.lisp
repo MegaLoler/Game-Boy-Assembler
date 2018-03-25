@@ -82,6 +82,24 @@
       (u16-promise (emit-word object))
       (s8-promise (emit-byte object)))))
 
+(defun db (&rest bytes)
+  "Emit data bytes."
+  (dolist (byte bytes)
+    (emit-byte byte)))
+
+(defun dw (&rest words)
+  "Emit data words."
+  (dolist (word words)
+    (emit-word word)))
+
+(defun org (addr &optional (fill #x00))
+  "Skip to an address filling space with a fill byte."
+  (if (< addr *asm-address*)
+      (error "Attempting to skip to a previous address!")
+      (loop
+	 :for addr :from *asm-address* :to (1- addr)
+	 :do (emit-byte fill))))
+
 (defun nop () (emit #x00))
 (defun stop () (emit #x10 #x00))
 (defun halt () (emit #x76))

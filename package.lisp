@@ -4,6 +4,9 @@
 	   label
 	   addr
 	   rel
+	   db
+	   dw
+	   org
 	   nop
 	   stop
 	   halt
