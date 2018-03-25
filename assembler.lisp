@@ -130,25 +130,25 @@
 (defun jp (arg1 &optional arg2)
   (gb/jp arg1 arg2))
 
-(defmethod gb/jr ((cond (eql 'nz)) (addr integer))
-  (declare (type (signed-byte 8) addr))
-  (emit #x20 addr))
+(defmethod gb/jr ((cond (eql 'nz)) (off integer))
+  (declare (type (signed-byte 8) off))
+  (emit #x20 off))
 
-(defmethod gb/jr ((cond (eql 'nc)) (addr integer))
-  (declare (type (signed-byte 8) addr))
-  (emit #x30 addr))
+(defmethod gb/jr ((cond (eql 'nc)) (off integer))
+  (declare (type (signed-byte 8) off))
+  (emit #x30 off))
 
-(defmethod gb/jr ((cond (eql 'z)) (addr integer))
-  (declare (type (signed-byte 8) addr))
-  (emit #x28 addr))
+(defmethod gb/jr ((cond (eql 'z)) (off integer))
+  (declare (type (signed-byte 8) off))
+  (emit #x28 off))
 
-(defmethod gb/jr ((cond (eql 'c)) (addr integer))
-  (declare (type (signed-byte 8) addr))
-  (emit #x38 addr))
+(defmethod gb/jr ((cond (eql 'c)) (off integer))
+  (declare (type (signed-byte 8) off))
+  (emit #x38 off))
 
-(defmethod gb/jr ((addr integer) arg2)
-  (declare (type (signed-byte 8) addr))
-  (emit #x18 addr))
+(defmethod gb/jr ((off integer) arg2)
+  (declare (type (signed-byte 8) off))
+  (emit #x18 off))
 
 (defun jr (arg1 &optional arg2)
   (gb/jr arg1 arg2))
@@ -299,6 +299,10 @@
 (defmethod add ((dst (eql 'a)) (val integer))
   (declare (type (unsigned-byte 8) val))
   (emit #xc6 val))
+
+(defmethod add ((dst (eql 'sp)) (off integer))
+  (declare (type (signed-byte 8) off))
+  (emit #xe8 off))
 
 (defmethod adc ((dst (eql 'a)) (src (eql 'b)))
   (emit #x88))
@@ -491,4 +495,4 @@
 
 (defmethod cp ((val integer))
   (declare (type (unsigned-byte 8) val))
-  (emit #xfe))
+  (emit #xfe val))
