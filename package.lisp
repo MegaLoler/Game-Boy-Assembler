@@ -31,7 +31,7 @@
 	   ldi
 	   ldd
 	   ldhl
-	   ld.i
+	   lda
 
 	   bc
 	   de

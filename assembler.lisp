@@ -571,8 +571,8 @@
 (defmethod ld ((off (eql 'a)) (src (eql 'c.i)))
   (emit #xf2))
 
-(defmethod ld.i ((addr integer) (src (eql 'a)))
+(defmethod lda ((addr integer) (src (eql 'a)))
   (emit #xea addr))
 
-(defmethod ld.i ((src (eql 'a)) (addr integer))
+(defmethod lda ((src (eql 'a)) (addr integer))
   (emit #xfa addr))
