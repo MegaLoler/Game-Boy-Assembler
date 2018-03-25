@@ -3,4 +3,6 @@
 *.swp
 .#*
 *.fasl
-test.out
+*.gb
+*.gbs
+*.sav

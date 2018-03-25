@@ -587,6 +587,5 @@
 	  :with x = #x19
 	  :for i :from #x134
 	  :repeat #x19
-	  :do (format t "~A : ~A ~%" (ldb (byte 8 0) x) i)
 	  :do (incf x (get-object i))
 	  :finally (return x))))

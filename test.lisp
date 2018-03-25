@@ -2,7 +2,7 @@
   (:use :cl :gb))
 (in-package :gb.test)
 
-(with-open-file (out "test.out"
+(with-open-file (out "test.gb"
 		     :direction :output
 		     :if-exists :overwrite
 		     :if-does-not-exist :create
