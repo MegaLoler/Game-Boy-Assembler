@@ -3,9 +3,11 @@
 (in-package :gb.test)
 
 ;; some todo
-;;   get hello world working
 ;;   label scopes `with-label'
 ;;   banks
+
+;; the font layout
+(defvar *encoding* "0123456789ABCDEFGHIJKLMNOPQRSTUVWXY.=:,Z!-*x ")
 
 (with-gb-out ("hello_world.gb" :title "Hello World")
   (label :start)                 ;; start!
@@ -36,7 +38,7 @@
   (label :clear-map)             ;; routine to clear bg map
   (ld 'hl #x9800)                ;; load start of bg map data
   (label :clear-map-loop)        ;; loop point
-  (xor 'a)                       ;; clear a
+  (ld 'a (encode #\Space *encoding*));; load a with a space character
   (ldi 'hl.i 'a)                 ;; clear tile byte and increment pointer
   (ld 'a 'h)                     ;; grab the high byte
   (cp #xa0)                      ;; see if its over the top yet
@@ -59,6 +61,19 @@
   
   ;; todo
   (label :load-map)              ;; routine to load bg map
+  (ld 'bc (addr :message))       ;; load the start of the message to copy
+  (ld 'de (diff :message
+		:message-end))   ;; counter of how many bytes to copy
+  (ld 'hl #x9800)                ;; load start of bg map data
+  (label :load-map-loop)         ;; loop point
+  (ld 'a 'bc.i)                  ;; grab a byte to copy
+  (inc 'bc)                      ;; increment the source pointer
+  (ldi 'hl.i 'a)                 ;; clear tile byte and increment pointer
+  ;; i think this can be better, i can't remember the best way to do counters ><
+  (dec 'de)                      ;; dec the counter
+  (ld 'a 'd)                     ;; or d and e together and see if its 0
+  (gb/or 'e)
+  (jr 'nz (rel :load-map-loop))  ;; if not 0 yet keep looping
   (ret)
 
   
@@ -67,6 +82,12 @@
   (cp 144)                       ;; compare it with 144 (start of vblank)
   (jr 'c (rel :wait-vblank))     ;; loop if its not there yet
   (ret)                          ;; else get outta here!
+
+
+  (label :message)               ;; the hello world message
+  (text "HELLO WORLD!"
+	*encoding*)              ;; hello world!
+  (label :message-end)           ;; end of the message
 
 
   (label :font)                  ;; include font data

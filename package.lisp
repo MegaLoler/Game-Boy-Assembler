@@ -5,10 +5,12 @@
 	   label
 	   addr
 	   rel
+	   diff
 	   db
 	   dw
 	   org
 	   encode
+	   text
 	   include
 	   include-bin
 	   make-header
@@ -35,7 +37,7 @@
 	   adc
 	   gb/and
 	   xor
-	   or
+	   gb/or
 	   cp
 	   ld
 	   ldh

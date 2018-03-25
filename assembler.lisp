@@ -63,6 +63,13 @@
 		      (error (format nil "Unknown label \"~A\"!" name)))
 		  addr))))
 
+(defun diff (start end)
+  "Return the distance between two labels."
+  (delay-u16 (- (or (gethash end *asm-labels*)
+		    (error (format nil "Unknown label \"~A\"!" end)))
+		(or (gethash start *asm-labels*)
+		    (error (format nil "Unknown label \"~A\"!" start))))))
+
 (defun emit-byte (byte)
   "Emit a byte to the output accumulator."
   (declare (type (or (unsigned-byte 8)
@@ -571,11 +578,21 @@
 
 ;; misc stuff
 
-(defmethod encode ((string string))
-  "Encode a string."
+(defmethod encode ((char character) &optional encoding)
+  "Encode a character according to an encoding string (or just ascii)."
+  (if encoding
+      (position char encoding)
+      (char-code char)))
+
+(defmethod encode ((string string) &optional encoding)
+  "Encode a string according to an encoding string (or just ascii)."
   (loop
      :for char :across string
-     :do (emit-byte (char-code char))))
+     :collect (encode char encoding)))
+
+(defun text (string &optional encoding)
+  "Encode a string and emit it as data bytes."
+  (apply #'db (encode string encoding)))
 
 (defun include (filespec)
   "Include a text file into the assembled output."
@@ -609,7 +626,7 @@
   (nop)
   (jp entry-point)
   (include-bin "logo.bin")
-  (encode (format nil "~:@(~A~)" (trunc-seq title 11)))
+  (text (format nil "~:@(~A~)" (trunc-seq title 11)))
   (org #x143)
   (db (case cgb-flag
 	(:dmg #x00)
