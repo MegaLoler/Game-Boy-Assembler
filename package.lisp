@@ -31,6 +31,7 @@
 	   ldi
 	   ldd
 	   ldhl
+	   ld.i
 
 	   bc
 	   de
@@ -41,6 +42,9 @@
 	   h l
 	   a f
 	   hl.i
+	   bc.i
+	   de.i
+	   c.i
 	   nz
 	   nc
 	   z
