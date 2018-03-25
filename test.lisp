@@ -11,4 +11,5 @@
   (add 'a #xFF)
   (ld 'c 'c)
   (ld 'c 'c)
+  (rlc 'hl.i)
   (stop))
