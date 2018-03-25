@@ -48,3 +48,9 @@
 (defmethod force ((promise promise))
   "Force a delayed evaluation."
   (funcall (closure promise)))
+
+(defun trunc-seq (seq max)
+  "Truncate a sequence if it is longer than a maximum specified length."
+  (if (> (length seq) max)
+      (subseq seq 0 max)
+      seq))

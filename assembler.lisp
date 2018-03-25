@@ -22,6 +22,7 @@
   (loop
      :for x :across vector
      :do (typecase x
+	   (s8-promise (write-byte (force x) stream))
 	   (u16-promise
 	    (let ((value (force x)))
 	      ;; little endian
@@ -81,6 +82,25 @@
        (emit-word object))
       (u16-promise (emit-word object))
       (s8-promise (emit-byte object)))))
+
+(defun object-length (object)
+  "Get the length in bytes an object takes in the output vector."
+  (typecase object
+    ((signed-byte 8)    1)
+    ((unsigned-byte 8)  1)
+    ((unsigned-byte 16) 2)
+    (u16-promise        2)
+    (s8-promise         1)))
+
+;; this is mainly just used for checksums...
+(defun get-object (target)
+  "Get the object at an address in the output buffer."
+  (loop
+     :with addr = 0
+     :for x :across *asm-out*
+     :while (< addr target)
+     :do (incf addr (object-length x))
+     :finally (return x)))
 
 (defun db (&rest bytes)
   "Emit data bytes."
@@ -533,3 +553,40 @@
        :for byte = (read-byte stream nil nil)
        :while byte
        :do (emit-byte byte))))
+
+;; cart header
+;; some stuff is missing, can add later
+(defun make-header
+    (&optional
+       (entry-point #x150)
+       (title "Untitled")
+       (cgb-flag :dmg))
+  "Make a cartridge header."
+  (declare (type (member :dmg :cgb :both) cgb-flag))
+  (declare (type (unsigned-byte 16) entry-point))
+  (declare (type string title))
+  (org #x100)
+  (nop)
+  (jp entry-point)
+  (include-bin "logo.bin")
+  (encode (format nil "~:@(~A~)" (trunc-seq title 11)))
+  (org #x143)
+  (db (case cgb-flag
+	(:dmg #x00)
+	(:cbg #xc0)
+	(:both #x80)))
+  (org #x14d)
+  (db (header-checksum))
+  (org #x150))
+
+;; i dont know if this is working right or not
+(defun header-checksum ()
+  "Calculate the header checksum."
+  (ldb (byte 8 0)
+       (loop
+	  :with x = #x19
+	  :for i :from #x134
+	  :repeat #x19
+	  :do (format t "~A : ~A ~%" (ldb (byte 8 0) x) i)
+	  :do (incf x (get-object i))
+	  :finally (return x))))

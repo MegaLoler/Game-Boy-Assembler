@@ -10,6 +10,7 @@
 	   encode
 	   include
 	   include-bin
+	   make-header
 	   nop
 	   stop
 	   halt
