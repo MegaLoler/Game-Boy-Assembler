@@ -496,3 +496,27 @@
 (defmethod cp ((val integer))
   (declare (type (unsigned-byte 8) val))
   (emit #xfe val))
+
+(defmethod ldh ((addr integer) (src (eql 'a)))
+  (declare (type (unsigned-byte 8) addr))
+  (emit #xe0 addr))
+
+(defmethod ldh ((dst (eql 'a)) (addr integer))
+  (declare (type (unsigned-byte 8) addr))
+  (emit #xf0 addr))
+
+(defmethod ldhl ((sp (eql 'sp)) (off integer))
+  (declare (type (signed-byte 8) off))
+  (emit #xf8 off))
+
+(defmethod ldi ((dst (eql 'a)) (src (eql 'hl.i)))
+  (emit #x2a))
+
+(defmethod ldi ((dst (eql 'hl.i)) (src (eql 'a)))
+  (emit #x22))
+
+(defmethod ldd ((dst (eql 'a)) (src (eql 'hl.i)))
+  (emit #x3a))
+
+(defmethod ldd ((dst (eql 'hl.i)) (src (eql 'a)))
+  (emit #x32))

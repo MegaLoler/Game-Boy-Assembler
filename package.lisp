@@ -26,6 +26,11 @@
 	   xor
 	   or
 	   cp
+	   ld
+	   ldh
+	   ldi
+	   ldd
+	   ldhl
 
 	   bc
 	   de
