@@ -574,5 +574,194 @@
 (defmethod lda ((addr integer) (src (eql 'a)))
   (emit #xea addr))
 
-(defmethod lda ((src (eql 'a)) (addr integer))
+(defmethod lda ((dst (eql 'a)) (addr integer))
   (emit #xfa addr))
+
+(defmethod ld ((dst (eql 'b)) (src (eql 'b)))
+  (emit #x40))
+
+(defmethod ld ((dst (eql 'b)) (src (eql 'c)))
+  (emit #x41))
+
+(defmethod ld ((dst (eql 'b)) (src (eql 'd)))
+  (emit #x42))
+
+(defmethod ld ((dst (eql 'b)) (src (eql 'e)))
+  (emit #x43))
+
+(defmethod ld ((dst (eql 'b)) (src (eql 'h)))
+  (emit #x44))
+
+(defmethod ld ((dst (eql 'b)) (src (eql 'l)))
+  (emit #x45))
+
+(defmethod ld ((dst (eql 'b)) (src (eql 'hl.i)))
+  (emit #x46))
+
+(defmethod ld ((dst (eql 'b)) (src (eql 'a)))
+  (emit #x47))
+
+(defmethod ld ((dst (eql 'c)) (src (eql 'b)))
+  (emit #x48))
+
+(defmethod ld ((dst (eql 'c)) (src (eql 'c)))
+  (emit #x49))
+
+(defmethod ld ((dst (eql 'c)) (src (eql 'd)))
+  (emit #x4a))
+
+(defmethod ld ((dst (eql 'c)) (src (eql 'e)))
+  (emit #x4b))
+
+(defmethod ld ((dst (eql 'c)) (src (eql 'h)))
+  (emit #x4c))
+
+(defmethod ld ((dst (eql 'c)) (src (eql 'l)))
+  (emit #x4d))
+
+(defmethod ld ((dst (eql 'c)) (src (eql 'hl.i)))
+  (emit #x4e))
+
+(defmethod ld ((dst (eql 'c)) (src (eql 'a)))
+  (emit #x4f))
+
+(defmethod ld ((dst (eql 'd)) (src (eql 'b)))
+  (emit #x50))
+
+(defmethod ld ((dst (eql 'd)) (src (eql 'c)))
+  (emit #x51))
+
+(defmethod ld ((dst (eql 'd)) (src (eql 'd)))
+  (emit #x52))
+
+(defmethod ld ((dst (eql 'd)) (src (eql 'e)))
+  (emit #x53))
+
+(defmethod ld ((dst (eql 'd)) (src (eql 'h)))
+  (emit #x54))
+
+(defmethod ld ((dst (eql 'd)) (src (eql 'l)))
+  (emit #x55))
+
+(defmethod ld ((dst (eql 'd)) (src (eql 'hl.i)))
+  (emit #x56))
+
+(defmethod ld ((dst (eql 'd)) (src (eql 'a)))
+  (emit #x57))
+
+(defmethod ld ((dst (eql 'e)) (src (eql 'b)))
+  (emit #x58))
+
+(defmethod ld ((dst (eql 'e)) (src (eql 'c)))
+  (emit #x59))
+
+(defmethod ld ((dst (eql 'e)) (src (eql 'd)))
+  (emit #x5a))
+
+(defmethod ld ((dst (eql 'e)) (src (eql 'e)))
+  (emit #x5b))
+
+(defmethod ld ((dst (eql 'e)) (src (eql 'h)))
+  (emit #x5c))
+
+(defmethod ld ((dst (eql 'e)) (src (eql 'l)))
+  (emit #x5d))
+
+(defmethod ld ((dst (eql 'e)) (src (eql 'hl.i)))
+  (emit #x5e))
+
+(defmethod ld ((dst (eql 'e)) (src (eql 'a)))
+  (emit #x5f))
+
+(defmethod ld ((dst (eql 'h)) (src (eql 'b)))
+  (emit #x60))
+
+(defmethod ld ((dst (eql 'h)) (src (eql 'c)))
+  (emit #x61))
+
+(defmethod ld ((dst (eql 'h)) (src (eql 'd)))
+  (emit #x62))
+
+(defmethod ld ((dst (eql 'h)) (src (eql 'e)))
+  (emit #x63))
+
+(defmethod ld ((dst (eql 'h)) (src (eql 'h)))
+  (emit #x64))
+
+(defmethod ld ((dst (eql 'h)) (src (eql 'l)))
+  (emit #x65))
+
+(defmethod ld ((dst (eql 'h)) (src (eql 'hl.i)))
+  (emit #x66))
+
+(defmethod ld ((dst (eql 'h)) (src (eql 'a)))
+  (emit #x67))
+
+(defmethod ld ((dst (eql 'l)) (src (eql 'b)))
+  (emit #x68))
+
+(defmethod ld ((dst (eql 'l)) (src (eql 'c)))
+  (emit #x69))
+
+(defmethod ld ((dst (eql 'l)) (src (eql 'd)))
+  (emit #x6a))
+
+(defmethod ld ((dst (eql 'l)) (src (eql 'e)))
+  (emit #x6b))
+
+(defmethod ld ((dst (eql 'l)) (src (eql 'h)))
+  (emit #x6c))
+
+(defmethod ld ((dst (eql 'l)) (src (eql 'l)))
+  (emit #x6d))
+
+(defmethod ld ((dst (eql 'l)) (src (eql 'hl.i)))
+  (emit #x6e))
+
+(defmethod ld ((dst (eql 'l)) (src (eql 'a)))
+  (emit #x6f))
+
+(defmethod ld ((dst (eql 'hl.i)) (src (eql 'b)))
+  (emit #x70))
+
+(defmethod ld ((dst (eql 'hl.i)) (src (eql 'c)))
+  (emit #x71))
+
+(defmethod ld ((dst (eql 'hl.i)) (src (eql 'd)))
+  (emit #x72))
+
+(defmethod ld ((dst (eql 'hl.i)) (src (eql 'e)))
+  (emit #x73))
+
+(defmethod ld ((dst (eql 'hl.i)) (src (eql 'h)))
+  (emit #x74))
+
+(defmethod ld ((dst (eql 'hl.i)) (src (eql 'l)))
+  (emit #x75))
+
+(defmethod ld ((dst (eql 'hl.i)) (src (eql 'a)))
+  (emit #x77))
+
+(defmethod ld ((dst (eql 'a)) (src (eql 'b)))
+  (emit #x78))
+
+(defmethod ld ((dst (eql 'a)) (src (eql 'c)))
+  (emit #x79))
+
+(defmethod ld ((dst (eql 'a)) (src (eql 'd)))
+  (emit #x7a))
+
+(defmethod ld ((dst (eql 'a)) (src (eql 'e)))
+  (emit #x7b))
+
+(defmethod ld ((dst (eql 'a)) (src (eql 'h)))
+  (emit #x7c))
+
+(defmethod ld ((dst (eql 'a)) (src (eql 'l)))
+  (emit #x7d))
+
+(defmethod ld ((dst (eql 'a)) (src (eql 'hl.i)))
+  (emit #x7e))
+
+(defmethod ld ((dst (eql 'a)) (src (eql 'a)))
+  (emit #x7f))
