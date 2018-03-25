@@ -7,6 +7,9 @@
 	   db
 	   dw
 	   org
+	   encode
+	   include
+	   include-bin
 	   nop
 	   stop
 	   halt

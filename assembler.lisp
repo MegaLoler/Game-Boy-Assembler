@@ -508,3 +508,28 @@
 (define-bitwise-opcode gb/bit #x40)
 (define-bitwise-opcode res #x80)
 (define-bitwise-opcode gb/set #xc0)
+
+;; misc stuff
+
+(defmethod encode ((string string))
+  "Encode a string."
+  (loop
+     :for char :across string
+     :do (emit-byte (char-code char))))
+
+(defun include (filespec)
+  "Include a text file into the assembled output."
+  (with-open-file (stream filespec)
+    (loop
+       :for char = (read-char stream nil nil)
+       :while char
+       :do (emit-byte (char-code char)))))
+
+(defun include-bin (filespec)
+  "Include a binary file into the assembled output."
+  (with-open-file (stream filespec
+			  :element-type '(unsigned-byte 8))
+    (loop
+       :for byte = (read-byte stream nil nil)
+       :while byte
+       :do (emit-byte byte))))
