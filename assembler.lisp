@@ -376,3 +376,119 @@
 
 (defmethod sbc ((dst (eql 'a)) (src (eql 'a)))
   (emit #x9f))
+
+(defmethod sbc ((dst (eql 'a)) (val integer))
+  (declare (type (unsigned-byte 8) val))
+  (emit #xde val))
+
+(defmethod gb/and ((src (eql 'b)))
+  (emit #xa0))
+
+(defmethod gb/and ((src (eql 'c)))
+  (emit #xa1))
+
+(defmethod gb/and ((src (eql 'd)))
+  (emit #xa2))
+
+(defmethod gb/and ((src (eql 'e)))
+  (emit #xa3))
+
+(defmethod gb/and ((src (eql 'h)))
+  (emit #xa4))
+
+(defmethod gb/and ((src (eql 'l)))
+  (emit #xa5))
+
+(defmethod gb/and ((src (eql 'hl.i)))
+  (emit #xa6))
+
+(defmethod gb/and ((src (eql 'a)))
+  (emit #xa7))
+
+(defmethod gb/and ((val integer))
+  (declare (type (unsigned-byte 8) val))
+  (emit #xe6 val))
+
+(defmethod xor ((src (eql 'b)))
+  (emit #xa8))
+
+(defmethod xor ((src (eql 'c)))
+  (emit #xa9))
+
+(defmethod xor ((src (eql 'd)))
+  (emit #xaa))
+
+(defmethod xor ((src (eql 'e)))
+  (emit #xab))
+
+(defmethod xor ((src (eql 'h)))
+  (emit #xac))
+
+(defmethod xor ((src (eql 'l)))
+  (emit #xad))
+
+(defmethod xor ((src (eql 'hl.i)))
+  (emit #xae))
+
+(defmethod xor ((src (eql 'a)))
+  (emit #xaf))
+
+(defmethod xor ((val integer))
+  (declare (type (unsigned-byte 8) val))
+  (emit #xee val))
+
+(defmethod gb/or ((src (eql 'b)))
+  (emit #xb0))
+
+(defmethod gb/or ((src (eql 'c)))
+  (emit #xb1))
+
+(defmethod gb/or ((src (eql 'd)))
+  (emit #xb2))
+
+(defmethod gb/or ((src (eql 'e)))
+  (emit #xb3))
+
+(defmethod gb/or ((src (eql 'h)))
+  (emit #xb4))
+
+(defmethod gb/or ((src (eql 'l)))
+  (emit #xb5))
+
+(defmethod gb/or ((src (eql 'hl.i)))
+  (emit #xb6))
+
+(defmethod gb/or ((src (eql 'a)))
+  (emit #xb7))
+
+(defmethod gb/or ((val integer))
+  (declare (type (unsigned-byte 8) val))
+  (emit #xf6 val))
+
+(defmethod cp ((src (eql 'b)))
+  (emit #xb8))
+
+(defmethod cp ((src (eql 'c)))
+  (emit #xb9))
+
+(defmethod cp ((src (eql 'd)))
+  (emit #xba))
+
+(defmethod cp ((src (eql 'e)))
+  (emit #xbb))
+
+(defmethod cp ((src (eql 'h)))
+  (emit #xbc))
+
+(defmethod cp ((src (eql 'l)))
+  (emit #xbd))
+
+(defmethod cp ((src (eql 'hl.i)))
+  (emit #xbe))
+
+(defmethod cp ((src (eql 'a)))
+  (emit #xbf))
+
+(defmethod cp ((val integer))
+  (declare (type (unsigned-byte 8) val))
+  (emit #xfe))

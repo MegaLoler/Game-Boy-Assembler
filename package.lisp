@@ -22,6 +22,10 @@
 	   ccf
 	   add
 	   adc
+	   gb/and
+	   xor
+	   or
+	   cp
 
 	   bc
 	   de
