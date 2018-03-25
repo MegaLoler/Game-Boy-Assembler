@@ -765,3 +765,51 @@
 
 (defmethod ld ((dst (eql 'a)) (src (eql 'a)))
   (emit #x7f))
+
+(defun rlca ()
+  (emit #x07))
+
+(defun rla ()
+  (emit #x17))
+
+(defun rrca ()
+  (emit #x0f))
+
+(defun rra ()
+  (emit #x1f))
+
+;; all the following are prefixed by #xcb
+
+(defmacro define-xcb-opcode (name args second-byte-base)
+  "Define a series of opcodes for registers b, c, d, e, h, l, (hl), and a prefixed by #xcb."
+  `(progn
+     ,@(loop
+	  :for second-byte :from second-byte-base
+	  :for register :in '(b c d e h l hl.i a)
+	  :collect `(defmethod ,name ,(append (mapcar (lambda (arg)
+							`(,(gensym) (eql ,arg)))
+						      args)
+					      `((reg (eql ',register))))
+		      (emit #xcb ,second-byte)))))
+
+(defmacro define-bitwise-opcode (name second-byte-base-base)
+  "Define a series of #xcb opcodes for each bit from 0 to 7 as the first argument."
+  `(progn
+     ,@(loop
+	  :for second-byte-base :from second-byte-base-base :by 8
+	  :for bit :from 0 :to 7
+	  :collect `(define-xcb-opcode ,name (,bit) ,second-byte-base))))
+
+(define-xcb-opcode rlc () #x00)
+(define-xcb-opcode rrc () #x08)
+(define-xcb-opcode rl () #x10)
+(define-xcb-opcode rr () #x18)
+(define-xcb-opcode sla () #x20)
+(define-xcb-opcode sra () #x28)
+(define-xcb-opcode swap () #x30)
+(define-xcb-opcode srl () #x38)
+(define-xcb-opcode srl () #x38)
+
+(define-bitwise-opcode gb/bit #x40)
+(define-bitwise-opcode res #x80)
+(define-bitwise-opcode gb/set #xc0)

@@ -9,4 +9,6 @@
   (dec 'hl.i)
   (ret)
   (add 'a #xFF)
+  (ld 'c 'c)
+  (ld 'c 'c)
   (stop))

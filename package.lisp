@@ -32,6 +32,21 @@
 	   ldd
 	   ldhl
 	   lda
+	   rlca
+	   rla
+	   rrca
+	   rra
+	   rlc
+	   rrc
+	   rl
+	   rr
+	   sla
+	   sra
+	   swap
+	   srl
+	   gb/bit
+	   res
+	   gb/set
 
 	   bc
 	   de
