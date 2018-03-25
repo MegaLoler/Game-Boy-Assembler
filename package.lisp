@@ -1,6 +1,7 @@
 (defpackage :gb
   (:use :cl)
-  (:export with-asm-out
+  (:export with-gb-out
+	   with-asm-out
 	   label
 	   addr
 	   rel

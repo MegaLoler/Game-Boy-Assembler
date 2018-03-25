@@ -1,5 +1,17 @@
 (in-package :gb)
 
+(defmacro with-gb-out ((filespec &rest header-options) &body body)
+  "Make a .gb file!"
+  (let ((out-sym (gensym)))
+    `(with-open-file (,out-sym ,filespec
+			       :direction :output
+			       :if-exists :overwrite
+			       :if-does-not-exist :create
+			       :element-type '(unsigned-byte 8))
+       (with-asm-out (,out-sym)
+	 (make-header ,@header-options)
+	 ,@body))))
+
 (defmacro with-asm-out
     ((output-stream
       &optional
@@ -22,13 +34,13 @@
   (loop
      :for x :across vector
      :do (typecase x
-	   (s8-promise (write-byte (force x) stream))
+	   (s8-promise (write-byte (ldb (byte 8 0) (force x)) stream))
 	   (u16-promise
 	    (let ((value (force x)))
 	      ;; little endian
 	      (write-byte (ldb (byte 8 0) value) stream)
 	      (write-byte (ldb (byte 8 8) value) stream)))
-	   (t (write-byte x stream)))))
+	   (t (write-byte (ldb (byte 8 0) x) stream)))))
 
 (defvar *asm-out*)
 (defvar *asm-labels*)
@@ -557,7 +569,7 @@
 ;; cart header
 ;; some stuff is missing, can add later
 (defun make-header
-    (&optional
+    (&key
        (entry-point #x150)
        (title "Untitled")
        (cgb-flag :dmg))
