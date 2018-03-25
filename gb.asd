@@ -5,4 +5,5 @@
   :components
   ((:file "package")
    (:file "util")
-   (:file "assembler")))
+   (:file "assembler")
+   (:file "constants")))

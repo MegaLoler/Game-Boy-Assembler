@@ -433,9 +433,35 @@
 (defmethod ld ((off (eql 'c.i)) (src (eql 'a))) (emit #xe2))
 (defmethod ld ((off (eql 'a)) (src (eql 'c.i))) (emit #xf2))
 
-(defmethod lda ((addr integer) (src (eql 'a))) (emit #xea addr))
-(defmethod lda ((dst (eql 'a)) (addr integer)) (emit #xfa addr))
+(defmethod lda ((addr integer) (src (eql 'sp)))
+  (declare (type (unsigned-byte 16) addr))
+  (emit #x08 addr))
 
+(defmethod lda ((addr integer) (src (eql 'a)))
+  (declare (type (unsigned-byte 16) addr))
+  (emit #xea addr))
+
+(defmethod lda ((dst (eql 'a)) (addr integer))
+  (declare (type (unsigned-byte 16) addr))
+  (emit #xfa addr))
+
+(defmethod ld ((dst (eql 'bc)) (val integer))
+  (declare (type (unsigned-byte 16) val))
+  (emit #x01 val))
+
+(defmethod ld ((dst (eql 'de)) (val integer))
+  (declare (type (unsigned-byte 16) val))
+  (emit #x11 val))
+
+(defmethod ld ((dst (eql 'hl)) (val integer))
+  (declare (type (unsigned-byte 16) val))
+  (emit #x21 val))
+
+(defmethod ld ((dst (eql 'sp)) (val integer))
+  (declare (type (unsigned-byte 16) val))
+  (emit #x31 val))
+
+(defmethod ld ((dst (eql 'sp)) (src (eql 'hl))) (emit #xf9))
 (defmethod ld ((dst (eql 'b)) (src (eql 'b))) (emit #x40))
 (defmethod ld ((dst (eql 'b)) (src (eql 'c))) (emit #x41))
 (defmethod ld ((dst (eql 'b)) (src (eql 'd))) (emit #x42))
