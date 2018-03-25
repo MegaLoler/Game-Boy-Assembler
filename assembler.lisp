@@ -1,8 +1,10 @@
 (in-package :gb)
 
 (defmacro with-asm-out
-    ((var
+    ((output-stream
       &optional
+      (org #x0000)
+      (asm-labels (make-hash-table))
       (stream
        (make-array
 	0
@@ -11,14 +13,74 @@
      &body body)
   "Execute code with *asm-out* bound to a vector for accumulating the output, then return that vector."
   `(let ((*asm-out* ,stream)
-	 (,var ,stream))
-     ,@(append body (list var))))
+	 (*asm-labels* ,asm-labels)
+	 (*asm-address* ,org))
+     ,@(append body (list `(encode-output *asm-out* ,output-stream)))))
+
+(defun encode-output (vector stream)
+  "Encode an output vector and write the bytes to an output stream."
+  (loop
+     :for x :across vector
+     :do (typecase x
+	   (u16-promise
+	    (let ((value (force x)))
+	      ;; little endian
+	      (write-byte (ldb (byte 8 0) value) stream)
+	      (write-byte (ldb (byte 8 8) value) stream)))
+	   (t (write-byte x stream)))))
 
 (defvar *asm-out*)
+(defvar *asm-labels*)
+(defvar *asm-address*)
+
+(defun label (name)
+  "Make a label with the current address."
+  (setf (gethash name *asm-labels*)
+	*asm-address*))
+
+(defun addr (name)
+  "Return the absolute address of a label."
+  (delay-u16 (or (gethash name *asm-labels*)
+		 (error (format nil "Unknown label \"~A\"!" name)))))
+
+(defun rel (name)
+  "Return the relative address of a label."
+  (delay-s8 (- (force (addr name))
+	       *asm-address*)))
+
+(defun emit-byte (byte)
+  "Emit a byte to the output accumulator."
+  (declare (type (or (unsigned-byte 8)
+		     (signed-byte 8)
+		     s8-promise)
+		 byte))
+  (incf *asm-address*)
+  (vector-push-extend byte *asm-out*))
+
+(defun emit-word (word)
+  "Emit a word to the output accumulator."
+  (declare (type (or u16-promise (unsigned-byte 16)) word))
+  (if (typep word 'u16-promise)
+      (progn
+	(incf *asm-address* 2)
+	(vector-push-extend word *asm-out*))
+      (progn
+	;; little endian
+	(emit-byte (ldb (byte 8 0) word))
+	(emit-byte (ldb (byte 8 8) word)))))
 
 (defun emit (&rest objects)
   "Emit objects to the output accumulator."
-  (dolist (object objects) (vector-push-extend object *asm-out*)))
+  (dolist (object objects)
+    (typecase object
+      ((signed-byte 8)
+       (emit-byte object))
+      ((unsigned-byte 8)
+       (emit-byte object))
+      ((unsigned-byte 16)
+       (emit-word object))
+      (u16-promise (emit-word object))
+      (s8-promise (emit-byte object)))))
 
 (defun nop () (emit #x00))
 (defun stop () (emit #x10 #x00))
@@ -35,6 +97,7 @@
 (defmethod gb/pop ((regs (eql 'de))) (emit #xd1))
 (defmethod gb/pop ((regs (eql 'hl))) (emit #xe1))
 (defmethod gb/pop ((regs (eql 'af))) (emit #xf1))
+
 (defmethod gb/ret ((cond (eql 'nz))) (emit #xc0))
 (defmethod gb/ret ((cond (eql 'nc))) (emit #xd0))
 (defmethod gb/ret ((cond (eql 'z))) (emit #xc8))
@@ -53,71 +116,71 @@
 (defmethod rst ((vec (eql #x28))) (emit #xef))
 (defmethod rst ((vec (eql #x38))) (emit #xff))
 
-(defmethod gb/jp ((cond (eql 'nz)) (addr integer))
-  (declare (type (unsigned-byte 16) addr))
+(defmethod gb/jp ((cond (eql 'nz)) addr)
+  (declare (type (or u16-promise (unsigned-byte 16)) addr))
   (emit #xc2 addr))
 
-(defmethod gb/jp ((cond (eql 'nc)) (addr integer))
-  (declare (type (unsigned-byte 16) addr))
+(defmethod gb/jp ((cond (eql 'nc)) addr)
+  (declare (type (or u16-promise (unsigned-byte 16)) addr))
   (emit #xd2 addr))
 
-(defmethod gb/jp ((addr integer) arg2)
-  (declare (type (unsigned-byte 16) addr))
+(defmethod gb/jp (addr arg2)
+  (declare (type  (or u16-promise (unsigned-byte 16)) addr))
   (emit #xc3 addr))
 
 (defmethod gb/jp ((addr (eql '(hl))) arg2)
   (emit #xe9))
 
-(defmethod gb/jp ((cond (eql 'c)) (addr integer))
-  (declare (type (unsigned-byte 16) addr))
+(defmethod gb/jp ((cond (eql 'c)) addr)
+  (declare (type (or u16-promise (unsigned-byte 16)) addr))
   (emit #xda addr))
 
-(defmethod gb/jp ((cond (eql 'z)) (addr integer))
-  (declare (type (unsigned-byte 16) addr))
+(defmethod gb/jp ((cond (eql 'z)) addr)
+  (declare (type (or u16-promise (unsigned-byte 16)) addr))
   (emit #xca addr))
 
 (defun jp (arg1 &optional arg2) (gb/jp arg1 arg2))
 
-(defmethod gb/jr ((cond (eql 'nz)) (off integer))
-  (declare (type (signed-byte 8) off))
+(defmethod gb/jr ((cond (eql 'nz)) off)
+  (declare (type (or s8-promise (signed-byte 8)) off))
   (emit #x20 off))
 
-(defmethod gb/jr ((cond (eql 'nc)) (off integer))
-  (declare (type (signed-byte 8) off))
+(defmethod gb/jr ((cond (eql 'nc)) off)
+  (declare (type (or s8-promise (signed-byte 8)) off))
   (emit #x30 off))
 
-(defmethod gb/jr ((cond (eql 'z)) (off integer))
-  (declare (type (signed-byte 8) off))
+(defmethod gb/jr ((cond (eql 'z)) off)
+  (declare (type (or s8-promise (signed-byte 8)) off))
   (emit #x28 off))
 
-(defmethod gb/jr ((cond (eql 'c)) (off integer))
-  (declare (type (signed-byte 8) off))
+(defmethod gb/jr ((cond (eql 'c)) off)
+  (declare (type (or s8-promise (signed-byte 8)) off))
   (emit #x38 off))
 
-(defmethod gb/jr ((off integer) arg2)
-  (declare (type (signed-byte 8) off))
+(defmethod gb/jr (off arg2)
+  (declare (type (or s8-promise (signed-byte 8)) off))
   (emit #x18 off))
 
 (defun jr (arg1 &optional arg2) (gb/jr arg1 arg2))
 
-(defmethod gb/call ((cond (eql 'nz)) (addr integer))
-  (declare (type (unsigned-byte 16) addr))
+(defmethod gb/call ((cond (eql 'nz)) addr)
+  (declare (type (or u16-promise (unsigned-byte 16)) addr))
   (emit #xc4 addr))
 
-(defmethod gb/call ((cond (eql 'nc)) (addr integer))
-  (declare (type (unsigned-byte 16) addr))
+(defmethod gb/call ((cond (eql 'nc)) addr)
+  (declare (type (or u16-promise (unsigned-byte 16)) addr))
   (emit #xd4 addr))
 
-(defmethod gb/call ((cond (eql 'z)) (addr integer))
-  (declare (type (unsigned-byte 16) addr))
+(defmethod gb/call ((cond (eql 'z)) addr)
+  (declare (type (or u16-promise (unsigned-byte 16)) addr))
   (emit #xca addr))
 
-(defmethod gb/call ((cond (eql 'c)) (addr integer))
-  (declare (type (unsigned-byte 16) addr))
+(defmethod gb/call ((cond (eql 'c)) addr)
+  (declare (type (or u16-promise (unsigned-byte 16)) addr))
   (emit #xda addr))
 
-(defmethod gb/call ((addr integer) arg2)
-  (declare (type (unsigned-byte 16) addr))
+(defmethod gb/call (addr arg2)
+  (declare (type (or u16-promise (unsigned-byte 16)) addr))
   (emit #xcd addr))
 
 (defun call (arg1 &optional arg2) (gb/call arg1 arg2))

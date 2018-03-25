@@ -1,6 +1,9 @@
 (defpackage :gb
   (:use :cl)
   (:export with-asm-out
+	   label
+	   addr
+	   rel
 	   nop
 	   stop
 	   halt
