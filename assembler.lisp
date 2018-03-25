@@ -58,8 +58,10 @@
 
 (defun rel (name)
   "Return the relative address of a label."
-  (delay-s8 (- (force (addr name))
-	       *asm-address*)))
+  (let ((addr (+ *asm-address* 2))) ;; + 2 because thats the length of the jr instruction itself
+    (delay-s8  (- (or (gethash name *asm-labels*)
+		      (error (format nil "Unknown label \"~A\"!" name)))
+		  addr))))
 
 (defun emit-byte (byte)
   "Emit a byte to the output accumulator."
@@ -433,32 +435,32 @@
 (defmethod ld ((off (eql 'c.i)) (src (eql 'a))) (emit #xe2))
 (defmethod ld ((off (eql 'a)) (src (eql 'c.i))) (emit #xf2))
 
-(defmethod lda ((addr integer) (src (eql 'sp)))
-  (declare (type (unsigned-byte 16) addr))
+(defmethod lda (addr (src (eql 'sp)))
+  (declare (type (or promise (unsigned-byte 16)) addr))
   (emit #x08 addr))
 
-(defmethod lda ((addr integer) (src (eql 'a)))
-  (declare (type (unsigned-byte 16) addr))
+(defmethod lda (addr (src (eql 'a)))
+  (declare (type (or promise (unsigned-byte 16)) addr))
   (emit #xea addr))
 
-(defmethod lda ((dst (eql 'a)) (addr integer))
-  (declare (type (unsigned-byte 16) addr))
+(defmethod lda ((dst (eql 'a)) addr)
+  (declare (type (or promise (unsigned-byte 16)) addr))
   (emit #xfa addr))
 
-(defmethod ld ((dst (eql 'bc)) (val integer))
-  (declare (type (unsigned-byte 16) val))
+(defmethod ld ((dst (eql 'bc)) val)
+  (declare (type (or promise (unsigned-byte 16)) val))
   (emit #x01 val))
 
-(defmethod ld ((dst (eql 'de)) (val integer))
-  (declare (type (unsigned-byte 16) val))
+(defmethod ld ((dst (eql 'de)) val)
+  (declare (type (or promise (unsigned-byte 16)) val))
   (emit #x11 val))
 
-(defmethod ld ((dst (eql 'hl)) (val integer))
-  (declare (type (unsigned-byte 16) val))
+(defmethod ld ((dst (eql 'hl)) val)
+  (declare (type (or promise (unsigned-byte 16)) val))
   (emit #x21 val))
 
-(defmethod ld ((dst (eql 'sp)) (val integer))
-  (declare (type (unsigned-byte 16) val))
+(defmethod ld ((dst (eql 'sp)) val)
+  (declare (type (or promise (unsigned-byte 16)) val))
   (emit #x31 val))
 
 (defmethod ld ((dst (eql 'sp)) (src (eql 'hl))) (emit #xf9))
