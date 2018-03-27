@@ -1,15 +1,12 @@
 (defpackage :gb.hello-world
-  (:use :cl :gb))
+  (:use :cl :gb :gb.assets))
 (in-package :gb.hello-world)
 
 ;; some todo
 ;;   label scopes `with-label'
 ;;   banks
 
-;; the font layout
-(defvar *encoding* "0123456789ABCDEFGHIJKLMNOPQRSTUVWXY.=:,Z!-*x ")
-
-(with-gb-out ("hello_world.gb" :title "Hello World")
+(with-gb-out ("../examples/hello_world.gb" :title "Hello World")
   (label :start)                 ;; start!
   
   (di)                           ;; disable interrupts
@@ -38,7 +35,7 @@
   (label :clear-map)             ;; routine to clear bg map
   (ld 'hl #x9800)                ;; load start of bg map data
   (label :clear-map-loop)        ;; loop point
-  (ld 'a (encode #\Space *encoding*));; load a with a space character
+  (ld 'a (encode #\Space *default-char-set*));; load a with a space character
   (ldi 'hl.i 'a)                 ;; clear tile byte and increment pointer
   (ld 'a 'h)                     ;; grab the high byte
   (cp #xa0)                      ;; see if its over the top yet
@@ -86,10 +83,9 @@
 
   (label :message)               ;; the hello world message
   (text "HELLO WORLD!"
-	*encoding*)              ;; hello world!
+	*default-char-set*)      ;; hello world!
   (label :message-end)           ;; end of the message
 
 
   (label :font)                  ;; include font data
-  (include-bin
-   "../assets/font.chr"))        ;; the tileset for the font is in this file
+  (bytes (binary *default-font*)))

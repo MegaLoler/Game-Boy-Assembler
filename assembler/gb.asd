@@ -6,4 +6,5 @@
   ((:file "package")
    (:file "util")
    (:file "assembler")
-   (:file "constants")))
+   (:file "constants")
+   (:file "vram")))

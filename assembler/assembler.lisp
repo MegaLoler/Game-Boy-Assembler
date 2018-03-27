@@ -594,6 +594,12 @@
   "Encode a string and emit it as data bytes."
   (apply #'db (encode string encoding)))
 
+(defun bytes (bytes)
+  "Include a vector of bytes directly into the assembled output."
+  (loop
+     :for byte :across bytes
+     :do (emit-byte byte)))
+
 (defun include (filespec)
   "Include a text file into the assembled output."
   (with-open-file (stream filespec)

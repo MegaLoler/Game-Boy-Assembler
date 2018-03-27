@@ -1,4 +1,4 @@
-(defsystem #:music
+(defsystem #:gb.music
     :description "A Game Boy music driver."
     :author "MegaLoler"
     :serial t

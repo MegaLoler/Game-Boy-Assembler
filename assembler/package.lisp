@@ -13,6 +13,7 @@
 	   text
 	   include
 	   include-bin
+	   bytes
 	   make-header
 	   nop
 	   stop
@@ -189,4 +190,15 @@
 	   +r-ocps+  
 	   +r-ocpd+  
 	   +r-svbk+  
-	   +r-ie+))
+	   +r-ie+
+
+	   gb-color
+	   gb-color-lsb
+	   gb-color-msb
+	   parse-gb-color
+	   read-gb-color
+	   gb-tile
+	   make-gb-tile
+	   binary-line
+	   binary
+	   dump-tileset))
