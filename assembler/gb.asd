@@ -7,4 +7,5 @@
    (:file "util")
    (:file "assembler")
    (:file "constants")
-   (:file "vram")))
+   (:file "vram")
+   (:file "macros")))

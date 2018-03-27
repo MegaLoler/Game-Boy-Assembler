@@ -1,0 +1,37 @@
+(in-package :gb)
+
+;; some lisp functions to serve as assembly macros
+;; i want all of these to be smart and flexible
+;; adjusting the code they produce depending on the arguments to be most efficient for that situtaion
+;; also allow specifying which registers to use for operations in case it matters
+
+;; todo:
+;;   make this smarter about which registers to use
+;;   use register c for counter if bytes is < 256, for example
+(defun copy (source-address destination-address bytes)
+  "An assembly macro to copy bytes."
+  (ld 'bc source-address)          ;; load the start of the message to copy
+  (ld 'de bytes)                   ;; counter of how many bytes to copy
+  (ld 'hl destination-address)     ;; load start of bg map data
+  (with-label :loop                ;; loop point
+    (ld 'a 'bc.i)                  ;; grab a byte to copy
+    (inc 'bc)                      ;; increment the source pointer
+    (ldi 'hl.i 'a)                 ;; copy byte and inc dest pointer
+    (dec 'de)                      ;; dec the counter
+    (ld 'a 'd)                     ;; or d and e together and see if its 0
+    (gb/or 'e)
+    (jr 'nz (rel :loop))))         ;; if not 0 yet keep looping
+
+;; todo:
+;;   adjust this to allow for copying multiple bytes in a rotation
+(defun copy-byte (byte destination-address bytes)
+  "An assembly macro to copy a single byte to a destination."
+  (ld 'de bytes)                   ;; counter of how many bytes to copy
+  (ld 'hl destination-address)     ;; load start of bg map data
+  (with-label :loop                ;; loop point
+    (ld 'a byte)                   ;; load the fill byte
+    (ldi 'hl.i 'a)                 ;; copy byte and inc dest pointer
+    (dec 'de)                      ;; dec the counter
+    (ld 'a 'd)                     ;; or d and e together and see if its 0
+    (gb/or 'e)
+    (jr 'nz (rel :loop))))         ;; if not 0 yet keep looping

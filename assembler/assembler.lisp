@@ -121,6 +121,18 @@
 		  (or (scope-get-label scope start)
 		      (error (format nil "Unknown label \"~A\"!" start)))))))
 
+(defmethod val ((promise promise))
+  "Get the value of a promise."
+  (force promise))
+
+(defmethod val (object)
+  "Get the value of a non-promise."
+  object)
+
+(defun ddiff (start end)
+  "Return as a promise the distance between two address values which may or may not promises."
+  (delay-u16 (- (val end) (val start))))
+
 (defun emit-byte (byte)
   "Emit a byte to the output accumulator."
   (declare (type (or (unsigned-byte 8)

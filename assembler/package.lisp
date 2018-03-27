@@ -8,6 +8,8 @@
 	   addr
 	   rel
 	   diff
+	   val
+	   ddiff
 	   db
 	   dw
 	   org
@@ -203,4 +205,7 @@
 	   make-gb-tile
 	   binary-line
 	   binary
-	   dump-tileset))
+	   dump-tileset
+
+	   copy
+	   copy-byte))
