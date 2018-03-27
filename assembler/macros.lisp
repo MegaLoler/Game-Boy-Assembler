@@ -63,19 +63,31 @@
   (ldr 'sp base))
 
 ;; definitely be sure to make this more flexible in terms of registers used!!
-;; also make this able to do values > 256
 ;; also support taking registers as the source value
 ;; also merge this with `copy-byte'
 (defun ldm (address byte)
-  "Write a value to a memory location."
-  (ldr 'a byte)
-  (if (>= address #xff00)
-      (ldh (ldb (byte 8 0) address) 'a)
+  "Write a value to a memory location.
+It can be an 8-bit value or more."
+  (if (typep byte `(or (unsigned-byte 8)
+		       u8-promise))
       (progn
-	(ldr 'de address)
-	(ldr 'de.i 'a))))
+	(ldr 'a byte)
+	(if (>= address #xff00)
+	    (ldh (ldb (byte 8 0) address) 'a)
+	    (lda address 'a)))
+      (let ((b byte))
+	(ldm address (delay-u8 (ldb (byte 8 0) (val b))))
+	(ldm (1+ address) (delay-u8 (floor (val b) #x100))))))
 
 (defun disable-lcd (&optional (vsync t))
   "Disable the lcd optionally waiting for vblank."
   (when vsync (vsync))           ;; optionally wait for vblank
   (ldm +lcdc+ 0))                ;; now turn off the lcd
+
+(defmethod gb/call ((addr (eql 'hl.i)) arg2)
+  "Simulate a call to the address contained in the hl register pair."
+  (scope
+    (ldr 'bc (addr :ret))
+    (gb/push 'bc)
+    (jp 'hl.i)
+    (label :ret)))

@@ -5,7 +5,7 @@
 ;; some todo:
 ;;   banks
 
-(with-gb-out ("../examples/hello_world.gb" :title "Hello World")
+(with-gb-out (("../examples/hello_world.gb") :title "Hello World")
   ;; setup some basics and disable lcd to be able to init vram
   (di)                           ;; disable interrupts
   (init-stack)                   ;; set the stack pointer (defaults to top of hram)
@@ -19,11 +19,11 @@
 
   ;; load bg map with hello world message
   (copy (addr :message)
-        +map+
+        +map0+
 	(diff :message :message-end))
 
   ;; clear the rest of the bg map
-  (let ((start (dsum #x9800 (diff :message :message-end))))
+  (let ((start (dsum +map0+ (diff :message :message-end))))
     (copy-byte (encode #\Space *default-char-set*)
 	       start
 	       (ddiff start +map1+)))

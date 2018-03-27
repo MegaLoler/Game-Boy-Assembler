@@ -20,6 +20,7 @@
 	   include-bin
 	   bytes
 	   make-header
+	   make-jump-vector
 	   nop
 	   stop
 	   halt

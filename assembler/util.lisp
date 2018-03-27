@@ -17,6 +17,12 @@
     :initarg :return-type
     :initform '(unsigned-byte 16))))
 
+(defclass u8-promise (promise)
+   ((return-type
+    :accessor return-type
+    :initarg :return-type
+    :initform '(unsigned-byte 8))))
+
 (defclass s8-promise (promise)
    ((return-type
     :accessor return-type
@@ -35,6 +41,13 @@
   "Delay an evaluation that promises to evaluate as a 16-bit unsigned value."
   `(make-instance
     'u16-promise
+    :closure (lambda ()
+	       ,expression)))
+
+(defmacro delay-u8 (expression)
+  "Delay an evaluation that promises to evaluate as a 8-bit unsigned value."
+  `(make-instance
+    'u8-promise
     :closure (lambda ()
 	       ,expression)))
 

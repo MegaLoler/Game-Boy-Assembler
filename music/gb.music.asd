@@ -1,5 +1,5 @@
 (defsystem #:gb.music
-    :description "A Game Boy music driver."
+    :description "Play music on Game Boy."
     :author "MegaLoler"
     :serial t
     :components

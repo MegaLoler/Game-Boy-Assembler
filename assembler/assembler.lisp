@@ -1,6 +1,8 @@
 (in-package :gb)
 
-(defmacro with-gb-out ((filespec &rest header-options) &body body)
+(defmacro with-gb-out
+    (((filespec &key rst0 rst8 rst10 rst18 rst20 rst28 rst30 rst38 vblank stat timer serial joypad)
+      &rest header-options) &body body)
   "Make a .gb file!"
   (let ((out-sym (gensym)))
     `(with-open-file (,out-sym ,filespec
@@ -9,6 +11,19 @@
 			       :if-does-not-exist :create
 			       :element-type '(unsigned-byte 8))
        (with-asm-out (,out-sym)
+	 (make-jump-vector #x00 ,rst0)
+	 (make-jump-vector #x08 ,rst8)
+	 (make-jump-vector #x10 ,rst10)
+	 (make-jump-vector #x18 ,rst18)
+	 (make-jump-vector #x20 ,rst20)
+	 (make-jump-vector #x28 ,rst28)
+	 (make-jump-vector #x30 ,rst30)
+	 (make-jump-vector #x38 ,rst38)
+	 (make-jump-vector #x40 ,vblank)
+	 (make-jump-vector #x48 ,stat)
+	 (make-jump-vector #x50 ,timer)
+	 (make-jump-vector #x58 ,serial)
+	 (make-jump-vector #x60 ,joypad)
 	 (make-header ,@header-options)
 	 ,@body))))
 
@@ -17,24 +32,25 @@
       &optional
       (org #x0000)
       asm-scope
-      (output-vector
-       (make-array
-	0
-	:adjustable t
-	:fill-pointer 0)))
+      output-vector)
      &body body)
   "Execute code with *asm-out* bound to a vector for accumulating the output, then return that vector."
-  `(let ((*asm-out* ,output-vector)
+  `(let ((*asm-out* (or ,output-vector (make-array
+					0
+					:adjustable t
+					:fill-pointer 0)))
 	 (*asm-scope* (or ,asm-scope (make-asm-scope)))
 	 (*asm-address* ,org))
      ,@(append body (list `(encode-output *asm-out* ,output-stream)))))
 
+;; what a mess
 (defun encode-output (vector stream)
   "Encode an output vector and write the bytes to an output stream."
   (loop
      :for x :across vector
      :do (typecase x
 	   (s8-promise (write-byte (ldb (byte 8 0) (force x)) stream))
+	   (u8-promise (write-byte (ldb (byte 8 0) (force x)) stream))
 	   (u16-promise
 	    (let ((value (force x)))
 	      ;; little endian
@@ -141,7 +157,8 @@
   "Emit a byte to the output accumulator."
   (declare (type (or (unsigned-byte 8)
 		     (signed-byte 8)
-		     s8-promise)
+		     s8-promise
+		     u8-promise)
 		 byte))
   (incf *asm-address*)
   (vector-push-extend byte *asm-out*))
@@ -169,6 +186,7 @@
       ((unsigned-byte 16)
        (emit-word object))
       (u16-promise (emit-word object))
+      (u8-promise (emit-byte object))
       (s8-promise (emit-byte object)))))
 
 (defun object-length (object)
@@ -254,7 +272,7 @@
   (declare (type  (or u16-promise (unsigned-byte 16)) addr))
   (emit #xc3 addr))
 
-(defmethod gb/jp ((addr (eql '(hl))) arg2)
+(defmethod gb/jp ((addr (eql 'hl.i)) arg2)
   (emit #xe9))
 
 (defmethod gb/jp ((cond (eql 'c)) addr)
@@ -448,20 +466,20 @@
 (defmethod cp ((src (eql 'hl.i))) (emit #xbe))
 (defmethod cp ((src (eql 'a))) (emit #xbf))
 
-(defmethod cp ((val integer))
-  (declare (type (unsigned-byte 8) val))
+(defmethod cp (val)
+  (declare (type (or u8-promise (unsigned-byte 8)) val))
   (emit #xfe val))
 
-(defmethod ldh ((addr integer) (src (eql 'a)))
-  (declare (type (unsigned-byte 8) addr))
+(defmethod ldh (addr (src (eql 'a)))
+  (declare (type (or u8-promise (unsigned-byte 8)) addr))
   (emit #xe0 addr))
 
-(defmethod ldh ((dst (eql 'a)) (addr integer))
-  (declare (type (unsigned-byte 8) addr))
+(defmethod ldh ((dst (eql 'a)) addr)
+  (declare (type (or u8-promise (unsigned-byte 8)) addr))
   (emit #xf0 addr))
 
-(defmethod ldhl ((sp (eql 'sp)) (off integer))
-  (declare (type (signed-byte 8) off))
+(defmethod ldhl ((sp (eql 'sp)) off)
+  (declare (type (or s8-promise (signed-byte 8)) off))
   (emit #xf8 off))
 
 (defmethod ldi ((dst (eql 'a)) (src (eql 'hl.i))) (emit #x2a))
@@ -474,36 +492,36 @@
 (defmethod ld ((dst (eql 'a)) (src (eql 'bc.i))) (emit #x0a))
 (defmethod ld ((dst (eql 'a)) (src (eql 'de.i))) (emit #x1a))
 
-(defmethod ld ((dst (eql 'b)) (val integer))
-  (declare (type (unsigned-byte 8) val))
+(defmethod ld ((dst (eql 'b)) val)
+  (declare (type (or u8-promise (unsigned-byte 8)) val))
   (emit #x06 val))
 
-(defmethod ld ((dst (eql 'c)) (val integer))
-  (declare (type (unsigned-byte 8) val))
+(defmethod ld ((dst (eql 'c)) val)
+  (declare (type (or u8-promise (unsigned-byte 8)) val))
   (emit #x0e val))
 
-(defmethod ld ((dst (eql 'd)) (val integer))
-  (declare (type (unsigned-byte 8) val))
+(defmethod ld ((dst (eql 'd)) val)
+  (declare (type (or u8-promise (unsigned-byte 8)) val))
   (emit #x16 val))
 
-(defmethod ld ((dst (eql 'e)) (val integer))
-  (declare (type (unsigned-byte 8) val))
+(defmethod ld ((dst (eql 'e)) val)
+  (declare (type (or u8-promise (unsigned-byte 8)) val))
   (emit #x1e val))
 
-(defmethod ld ((dst (eql 'h)) (val integer))
-  (declare (type (unsigned-byte 8) val))
+(defmethod ld ((dst (eql 'h)) val)
+  (declare (type (or u8-promise (unsigned-byte 8)) val))
   (emit #x26 val))
 
-(defmethod ld ((dst (eql 'l)) (val integer))
-  (declare (type (unsigned-byte 8) val))
+(defmethod ld ((dst (eql 'l)) val)
+  (declare (type (or u8-promise (unsigned-byte 8)) val))
   (emit #x2e val))
 
-(defmethod ld ((dst (eql 'hl.i)) (val integer))
-  (declare (type (unsigned-byte 8) val))
+(defmethod ld ((dst (eql 'hl.i)) val)
+  (declare (type (or u8-promise (unsigned-byte 8)) val))
   (emit #x36 val))
 
-(defmethod ld ((dst (eql 'a)) (val integer))
-  (declare (type (unsigned-byte 8) val))
+(defmethod ld ((dst (eql 'a)) val)
+  (declare (type (or u8-promise (unsigned-byte 8)) val))
   (emit #x3e val))
 
 (defmethod ld ((off (eql 'c.i)) (src (eql 'a))) (emit #xe2))
@@ -683,6 +701,12 @@
        :for byte = (read-byte stream nil nil)
        :while byte
        :do (emit-byte byte))))
+
+(defun make-jump-vector (vector-address jump-address)
+  "Insert a jump vector."
+  (when jump-address
+    (org vector-address)
+    (jp jump-address)))
 
 ;; cart header
 ;; some stuff is missing, can add later

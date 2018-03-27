@@ -3,7 +3,9 @@
   :author "MegaLoler"
   :serial t
   :components
-  ((:file "hello"))
+  ((:file "hello")
+   (:file "music"))
   :depends-on
   (#:gb
-   #:gb.assets))
+   #:gb.assets
+   #:gb.music))
