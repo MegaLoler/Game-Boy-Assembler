@@ -10,6 +10,7 @@
 	   diff
 	   val
 	   ddiff
+	   dsum
 	   db
 	   dw
 	   org
@@ -213,4 +214,5 @@
 	   vsync
 	   ldr
 	   init-stack
-	   ldm))
+	   ldm
+	   disable-lcd))

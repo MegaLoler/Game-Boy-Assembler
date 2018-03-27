@@ -130,8 +130,12 @@
   object)
 
 (defun ddiff (start end)
-  "Return as a promise the distance between two address values which may or may not promises."
+  "Return as a promise the distance between two 16-bit values which may or may not promises."
   (delay-u16 (- (val end) (val start))))
+
+(defun dsum (a b)
+  "Return as a promise the sum of two 16-bit values which may or may not promises."
+  (delay-u16 (+ (val a) (val b))))
 
 (defun emit-byte (byte)
   "Emit a byte to the output accumulator."

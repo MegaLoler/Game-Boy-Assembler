@@ -74,3 +74,8 @@
       (progn
 	(ldr 'de address)
 	(ldr 'de.i 'a))))
+
+(defun disable-lcd (&optional (vsync t))
+  "Disable the lcd optionally waiting for vblank."
+  (when vsync (vsync))           ;; optionally wait for vblank
+  (ldm +lcdc+ 0))                ;; now turn off the lcd
