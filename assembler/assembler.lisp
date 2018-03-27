@@ -625,7 +625,7 @@
   (org #x100)
   (nop)
   (jp entry-point)
-  (include-bin "logo.bin")
+  (include-bin "../assets/logo.bin")
   (text (format nil "~:@(~A~)" (trunc-seq title 11)))
   (org #x143)
   (db (case cgb-flag

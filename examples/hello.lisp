@@ -1,6 +1,6 @@
-(defpackage :gb.test
+(defpackage :gb.hello-world
   (:use :cl :gb))
-(in-package :gb.test)
+(in-package :gb.hello-world)
 
 ;; some todo
 ;;   label scopes `with-label'
@@ -91,4 +91,5 @@
 
 
   (label :font)                  ;; include font data
-  (include-bin "font.chr"))      ;; the tileset for the font is in this file
+  (include-bin
+   "../assets/font.chr"))        ;; the tileset for the font is in this file
