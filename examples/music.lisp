@@ -1,6 +1,22 @@
 (defpackage :gb.music-example
-  (:use :cl :gb :gb.assets :gb.music))
+  (:shadowing-import-from :music a b c d e f h)
+  (:shadowing-import-from :gb di)
+  (:use :cl :gb :gb.assets :gb.music :music))
 (in-package :gb.music-example)
+
+(defsong (song-demo
+	  :title "Music Demo"
+	  :description "An example song for Game Boy.")
+  (with-key 'b-major
+    (seq (apply #'mapcar
+		(cons #'list
+		      (make-chorale
+		       (harmony '(I IV64 V43 I6 I6 IV IV I64 I64 V V65/vi V/vi
+				  vi visus2 iiimin6 iv iimin7 I iimin7 I6 IV I64 Vsus4 V7
+				  Isus4 I))
+		       3)))
+	 '(1/2 1 1 1/3 1 1 1 2/3 2 1/2 2/3 2
+	   1/2 1 1 1/3 1 1 1 1 1 1/2 1 1 1/4 1/4))))
 
 (with-gb-out (("../examples/music.gb" :vblank (addr :vblank))
 	      :title "Music Demo")
@@ -35,7 +51,6 @@
   (ei)                           ;; re-enable interrupts globally
   (halt-forever)                 ;; halt forever now
   
-
   ;; vblank handler
   (label :vblank)
   (music-routine)
@@ -45,26 +60,14 @@
   (label :song)
   (set-sq1-env)
   (set-sq2-env)
-  (play-freq-sq1 #x500 t)
-  (play-freq-sq2 #x600 t)
   (with-label :loop
-    (play-freq-sq2 #x600)
+    (gb/play (note 'c4))
     (music-ret)
-    (play-freq-sq2 #x620)
+    (gb/play (note 'e4))
     (music-ret)
-    (play-freq-sq2 #x630)
+    (gb/play (note 'g4))
     (music-ret)
-    (play-freq-sq2 #x640)
-    (music-ret)
-    (play-freq-sq2 #x650)
-    (music-ret)
-    (play-freq-sq2 #x640)
-    (music-ret)
-    (play-freq-sq2 #x620)
-    (music-ret)
-    (play-freq-sq2 #x620)
-    (music-ret)
-    (play-freq-sq2 #x610)
+    (gb/play (note 'b4))
     (music-ret)
     (jp (addr :loop)))
   

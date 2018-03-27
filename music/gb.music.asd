@@ -6,4 +6,5 @@
     ((:file "package")
      (:file "music"))
     :depends-on
-    (#:gb))
+    (#:gb
+     #:music))

@@ -8,26 +8,33 @@
 (defvar *sq2-freq* 0)
 (defvar *wave-freq* 0)
 
+(defun gb-freq (freq)
+  "Get a Game Boy frequency value from an actual frequency."
+  (floor (- (- (* (/ 1 freq) 131072) 2048))))
+
 (defun play-freq-sq1 (freq &optional trigger)
   "Set the frequency of the square 1 channel and restart the sound."
-  (setf *sq1-freq* freq)
-  (ldm +nr13+ (ldb (byte 8 0) freq))
-  (ldm +nr14+ (+ (if trigger #b10000000 0)
-		 (ldb (byte 3 8) freq))))
+  (let ((freq (gb-freq freq)))
+    (setf *sq1-freq* freq)
+    (ldm +nr13+ (ldb (byte 8 0) freq))
+    (ldm +nr14+ (+ (if trigger #b10000000 0)
+		   (ldb (byte 3 8) freq)))))
 
 (defun play-freq-sq2 (freq &optional trigger)
   "Set the frequency of the square 2 channel and restart the sound."
-  (setf *sq2-freq* freq)
-  (ldm +nr23+ (ldb (byte 8 0) freq))
-  (ldm +nr24+ (+ (if trigger #b10000000 0)
-		 (ldb (byte 3 8) freq))))
+  (let ((freq (gb-freq freq)))
+    (setf *sq2-freq* freq)
+    (ldm +nr23+ (ldb (byte 8 0) freq))
+    (ldm +nr24+ (+ (if trigger #b10000000 0)
+		   (ldb (byte 3 8) freq)))))
 
 (defun play-freq-wave (freq &optional trigger)
   "Set the frequency of the wave channel and restart the sound."
-  (setf *wave-freq* freq)
-  (ldm +nr33+ (ldb (byte 8 0) freq))
-  (ldm +nr34+ (+ (if trigger #b10000000 0)
-		 (ldb (byte 3 8) freq))))
+  (let ((freq (gb-freq freq)))
+    (setf *wave-freq* freq)
+    (ldm +nr33+ (ldb (byte 8 0) freq))
+    (ldm +nr34+ (+ (if trigger #b10000000 0)
+		   (ldb (byte 3 8) freq)))))
 
 (defun set-env (reg &optional (vol #xf) (len 0) (dir 'down))
   "Set the envelope settings of a channel."
@@ -77,3 +84,19 @@
     (set-song (addr :ret))
     (ret)
     (label :ret)))
+
+(defmethod gb/play ((event event))
+  "Play a musical event."
+  ;; (play-note (note event)
+  ;; 	     (on-time event)
+  ;; 	     (off-time event)
+  ;; 	     (velocity event)))
+  (play-freq-sq1 (frequency music:*standard-tuning* (note event)) t))
+
+(defmethod gb/play (object)
+  "Play a musical object."
+  (gb/play (event object)))
+
+(defmethod gb/play ((list list))
+  "Play a list of musical objects."
+  (mapc #'gb/play list))

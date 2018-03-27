@@ -1,5 +1,6 @@
 (defpackage :gb.music
-  (:use :cl :gb)
+  (:shadowing-import-from :gb a b c d e f h di)
+  (:use :cl :gb :music)
   (:export *music-pointer*
 	   init-music
 	   set-song
@@ -10,4 +11,5 @@
 	   play-freq-wave
 	   play-freq-noise
 	   set-sq1-env
-	   set-sq2-env))
+	   set-sq2-env
+	   gb/play))
