@@ -6,20 +6,13 @@
 ;;   banks
 
 (with-gb-out ("../examples/hello_world.gb" :title "Hello World")
-  ;; disable interrupts and setup the stack
+  ;; setup some basics and disable lcd to be able to init vram
   (label :start)                 ;; start!
   (di)                           ;; disable interrupts
-  (ld 'sp #xfffe)                ;; setup the stack pointer
-  
-  ;; wait for vblank
-  (with-label :loop
-    (ldh 'a +r-ly+)              ;; grab the contents of the ly register
-    (cp 144)                     ;; compare it with 144 (start of vblank)
-    (jr 'c (rel :loop)))         ;; loop if its not there yet
-
-  ;; now turn off the lcd
-  (xor 'a)                       ;; set a = 0
-  (ldh +r-lcdc+ 'a)              ;; turn off lcd
+  (init-stack)                   ;; set the stack pointer (defaults to top of hram)
+  (ldm +bgp+ #b11100100)         ;; load basic color palette
+  (vsync)                        ;; wait for vblank
+  (ldm +lcdc+ 0)                 ;; now turn off the lcd
 
   ;; clear the bg map
   (copy-byte (encode #\Space *default-char-set*)
@@ -36,19 +29,9 @@
 	#x9800
 	(diff :message :message-end))
 
-  ;; load basic color palette
-  (ld 'a #b11100100)             ;; basic color palette
-  (ldh +r-bgp+ 'a)               ;; load it
-
-  ;; enable lcd and bg map and first page of vram
-  (ld 'a #b10010001)             ;; lcd options
-  (ldh +r-lcdc+ 'a)              ;; load lcd options
-
-  ;; halt forever now
-  (with-label :loop
-    (halt)
-    (nop)
-    (jr (rel :loop)))
+  ;; now re-enable lcd and halt
+  (ldm +lcdc+ #b10010001)  ;; enable lcd and bg map and first page of vram
+  (halt-forever)  ;; halt forever now
   
   ;; the message to display on screen
   (label :message)

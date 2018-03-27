@@ -208,4 +208,9 @@
 	   dump-tileset
 
 	   copy
-	   copy-byte))
+	   copy-byte
+	   halt-forever
+	   vsync
+	   ldr
+	   init-stack
+	   ldm))

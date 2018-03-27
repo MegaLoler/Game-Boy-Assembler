@@ -35,3 +35,42 @@
     (ld 'a 'd)                     ;; or d and e together and see if its 0
     (gb/or 'e)
     (jr 'nz (rel :loop))))         ;; if not 0 yet keep looping
+
+(defun halt-forever ()
+  "Emit an infinite halt loop."
+  (with-label :loop
+    (halt)
+    (nop)
+    (jr (rel :loop))))
+
+(defun vsync ()
+  "Wait for vblank."
+  (with-label :loop
+    (ldh 'a +r-ly+)              ;; grab the contents of the ly register
+    (cp 144)                     ;; compare it with 144 (start of vblank)
+    (jr 'c (rel :loop))))        ;; loop if its not there yet
+
+(defmethod ldr ((reg symbol) val)
+  "Load a value into a register."
+  (ld reg val))
+
+(defmethod ldr ((reg (eql 'a)) (val (eql 0)))
+  "Clear the a register."
+  (xor 'a))
+
+(defun init-stack (&optional (base #xfffe))
+  "Set the stack pointer."
+  (ldr 'sp base))
+
+;; definitely be sure to make this more flexible in terms of registers used!!
+;; also make this able to do values > 256
+;; also support taking registers as the source value
+;; also merge this with `copy-byte'
+(defun ldm (address byte)
+  "Write a value to a memory location."
+  (ldr 'a byte)
+  (if (>= address #xff00)
+      (ldh (ldb (byte 8 0) address) 'a)
+      (progn
+	(ldr 'de address)
+	(ldr 'de.i 'a))))
