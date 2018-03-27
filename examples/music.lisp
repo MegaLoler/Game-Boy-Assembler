@@ -7,12 +7,12 @@
 (defsong (song-demo
 	  :title "Music Demo"
 	  :description "An example song for Game Boy.")
-  (with-key 'f-major
+  (with-key 'e♭-major
     (seq (apply #'mapcar (lambda (a b c)
 			  (voices (list a b c)))
 		(make-chorale
 		 (harmony '(I IV64 V43 I6 I6 IV IV I64 I64 V V65/vi V/vi
-			    vi visus2 iiimin iv iimin7 I iimin7 I6 IV I64 Vsus4 V7))
+			    vi visus2 iiimin iv iidom7 I iimin7 I6 IV I64 Vsus4 V7))
 		 3))
 	 '(1/2 1 1 1/3 1 1 1 2/3 2 1/2 2/3 2
 	   1/2 1 1 1/3 1 1 1 1 1 1/2 1 1 1/4 1/4))))
