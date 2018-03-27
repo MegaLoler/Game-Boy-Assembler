@@ -16,16 +16,16 @@
     ((output-stream
       &optional
       (org #x0000)
-      (asm-labels (make-hash-table))
-      (stream
+      asm-scope
+      (output-vector
        (make-array
 	0
 	:adjustable t
 	:fill-pointer 0)))
      &body body)
   "Execute code with *asm-out* bound to a vector for accumulating the output, then return that vector."
-  `(let ((*asm-out* ,stream)
-	 (*asm-labels* ,asm-labels)
+  `(let ((*asm-out* ,output-vector)
+	 (*asm-scope* (or ,asm-scope (make-asm-scope)))
 	 (*asm-address* ,org))
      ,@(append body (list `(encode-output *asm-out* ,output-stream)))))
 
@@ -43,32 +43,83 @@
 	   (t (write-byte (ldb (byte 8 0) x) stream)))))
 
 (defvar *asm-out*)
-(defvar *asm-labels*)
+(defvar *asm-scope*)
 (defvar *asm-address*)
+(defvar asm-scope)
+
+(defclass asm-scope ()
+  ((parent
+    :initarg :parent
+    :initform nil
+    :accessor parent)
+   (asm-labels
+    :initarg :asm-labels
+    :initform (make-hash-table)
+    :type hash-table
+    :accessor asm-labels))
+  (:documentation "A label scope."))
+
+(defun make-asm-scope (&optional parent)
+  "Make a new label scope optionally with a parent scope."
+  (make-instance 'asm-scope :parent parent))
+
+(defmethod scope-get-label ((scope asm-scope) name)
+  "Get a label from a scope."
+  (or (gethash name (asm-labels scope))
+      (and (parent scope)
+	   (scope-get-label (parent scope) name))))
+
+(defmethod scope-set-label ((scope asm-scope) name address)
+  "Set a label visible by a scope or make a new one in the current scope."
+  (when (scope-get-label scope name)
+    (warn (format nil "Overriding existing label ~S!" name)))
+  (setf (gethash name (asm-labels scope))
+	address))
+
+(defmacro scope (&body body)
+  "Make a label scope."
+  `(let ((*asm-scope* (make-asm-scope *asm-scope*)))
+     ,@body))
+
+(defmacro with-label (name &body body)
+  "Make a scope with a label at the start."
+  `(scope
+     (label ,name)
+     ,@body))
+
+(defun get-label (name)
+  "Get a label by a name."
+  (scope-get-label *asm-scope* name))
+
+(defun set-label (name address)
+  "Set a label with a name to an address."
+  (scope-set-label *asm-scope* name address))
 
 (defun label (name)
   "Make a label with the current address."
-  (setf (gethash name *asm-labels*)
-	*asm-address*))
+  (set-label name *asm-address*))
 
 (defun addr (name)
   "Return the absolute address of a label."
-  (delay-u16 (or (gethash name *asm-labels*)
-		 (error (format nil "Unknown label \"~A\"!" name)))))
+  (let ((scope *asm-scope*))
+    (delay-u16 (or (scope-get-label scope name)
+		   (error (format nil "Unknown label \"~A\"!" name))))))
 
 (defun rel (name)
   "Return the relative address of a label."
-  (let ((addr (+ *asm-address* 2))) ;; + 2 because thats the length of the jr instruction itself
-    (delay-s8  (- (or (gethash name *asm-labels*)
+  (let ((scope *asm-scope*)
+	(addr (+ *asm-address* 2))) ;; + 2 because thats the length of the jr instruction itself
+    (delay-s8  (- (or (scope-get-label scope name)
 		      (error (format nil "Unknown label \"~A\"!" name)))
 		  addr))))
 
 (defun diff (start end)
   "Return the distance between two labels."
-  (delay-u16 (- (or (gethash end *asm-labels*)
-		    (error (format nil "Unknown label \"~A\"!" end)))
-		(or (gethash start *asm-labels*)
-		    (error (format nil "Unknown label \"~A\"!" start))))))
+  (let ((scope *asm-scope*))
+    (delay-u16 (- (or (scope-get-label scope end)
+		      (error (format nil "Unknown label \"~A\"!" end)))
+		  (or (scope-get-label scope start)
+		      (error (format nil "Unknown label \"~A\"!" start)))))))
 
 (defun emit-byte (byte)
   "Emit a byte to the output accumulator."

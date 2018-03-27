@@ -3,6 +3,8 @@
   (:export with-gb-out
 	   with-asm-out
 	   label
+	   with-label
+	   scope
 	   addr
 	   rel
 	   diff
