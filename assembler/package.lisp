@@ -197,6 +197,29 @@
 	   +r-svbk+  
 	   +r-ie+
 
+	   +rom0+
+	   +rom1+
+	   +vram0+
+	   +vram1+
+	   +vram2+
+	   +vram+
+	   +map0+
+	   +map1+
+	   +map+
+	   +wram0+
+	   +wram1+
+	   +wram+
+	   +echo+
+	   +oam+
+	   +io+
+	   +hram+
+	   
+	   +rom-page-size+
+	   +vram-page-size+
+	   +vram-table-size+
+	   +map-page-size+
+	   +wram-page-size+
+
 	   gb-color
 	   gb-color-lsb
 	   gb-color-msb

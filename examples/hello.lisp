@@ -14,18 +14,19 @@
   
   ;; load font tileset into vram
   (copy (addr :font)
-	#x8000
+        +vram+
 	(diff :font :font-end))
 
   ;; load bg map with hello world message
   (copy (addr :message)
-	#x9800
+        +map+
 	(diff :message :message-end))
 
   ;; clear the rest of the bg map
-  (copy-byte (encode #\Space *default-char-set*)
-	     (dsum #x9800 (diff :message :message-end))
-	     #x800)
+  (let ((start (dsum #x9800 (diff :message :message-end))))
+    (copy-byte (encode #\Space *default-char-set*)
+	       start
+	       (ddiff start +map1+)))
 
   ;; now re-enable lcd and halt
   (ldm +lcdc+ #b10010001)        ;; enable lcd and bg map and first page of vram
