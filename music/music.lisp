@@ -55,12 +55,28 @@
   "Set the envelope settings of the square 1 channel."
   (set-env +nr22+ vol len dir))
 
+(defun set-wave-out (&optional (state t))
+  "Set whether the wave channel's sound is enabled."
+  (ldm +nr30+ (if state #b10000000 0)))
+
+(defun set-wave-vol (&optional (level 1))
+  "Set the output level of the wave channel."
+  (declare (type (integer 0 3) level))
+  (ldm +nr32+ (* level #b00100000)))
+
+(defun load-wave (&optional (val #xffffffffffffffff0000000000000000))
+  "Load the wave channel with a sample."
+  (ldm #xff30 val))
+
 (defun init-music ()
   "Setup for playing music."
   ;; enable all channels (except vin) at max volume on both stereo output channels
   (ldm +nr50+ #b01110111)
   (ldm +nr51+ #b11111111)
   ;; reset the channels
+  (load-wave)
+  (ldm +nr21+ #b10000000)
+  (ldm +nr11+ #b10000000)
   (ldm +nr30+ 0)
   (ldm +nr22+ 0)
   (ldm +nr12+ 0))
@@ -87,11 +103,20 @@
 
 (defmethod gb/play ((event event))
   "Play a musical event."
-  ;; (play-note (note event)
-  ;; 	     (on-time event)
-  ;; 	     (off-time event)
-  ;; 	     (velocity event)))
-  (play-freq-sq1 (frequency music:*standard-tuning* (note event)) t))
+  (funcall (case (channel event)
+	     (0 #'play-freq-sq1)
+	     (1 #'play-freq-sq2)
+	     (2 #'play-freq-wave))
+	   (* (frequency music:*standard-tuning* (note event))
+	      (case (channel event)
+		(2 2)
+		(otherwise 1)))
+	   t)
+  ;; this is just a dirty hack for now, gross and incredibly inefficient!
+  (when (= (channel event) 2)
+    (loop
+       :repeat (* 48 (- (off-time event) (on-time event)))
+       :do (music-ret))))
 
 (defmethod gb/play (object)
   "Play a musical object."

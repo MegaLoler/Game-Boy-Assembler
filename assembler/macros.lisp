@@ -77,7 +77,9 @@ It can be an 8-bit value or more."
 	    (lda address 'a)))
       (let ((b byte))
 	(ldm address (delay-u8 (ldb (byte 8 0) (val b))))
-	(ldm (1+ address) (delay-u8 (floor (val b) #x100))))))
+	(if (typep b '(or promise (unsigned-byte 8)))
+	    (ldm (1+ address) (delay-u8 (floor (val b) #x100)))
+	    (ldm (1+ address) (floor b #x100))))))
 
 (defun disable-lcd (&optional (vsync t))
   "Disable the lcd optionally waiting for vblank."

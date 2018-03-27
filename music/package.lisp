@@ -12,4 +12,6 @@
 	   play-freq-noise
 	   set-sq1-env
 	   set-sq2-env
+	   set-wave-out
+	   set-wave-vol
 	   gb/play))
