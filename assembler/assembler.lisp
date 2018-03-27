@@ -710,8 +710,7 @@
   "Calculate the header checksum."
   (ldb (byte 8 0)
        (loop
-	  :with x = #x19
-	  :for i :from #x134
-	  :repeat #x19
-	  :do (incf x (get-object i))
+	  :with x = 0
+	  :for i :from #x134 :to #x014c
+	  :do (decf x (1+ (get-object i)))
 	  :finally (return x))))

@@ -52,8 +52,7 @@
   
   ;; the message to display on screen
   (label :message)
-  (text "HELLO WORLD!"
-	*default-char-set*)
+  (text "HELLO WORLD!" *default-char-set*)
   (label :message-end)
 
   ;; the font data
