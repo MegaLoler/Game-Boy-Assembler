@@ -7,7 +7,7 @@
 (defsong (song-demo
 	  :title "Music Demo"
 	  :description "An example song for Game Boy.")
-  (with-tempo ((make-tempo 120))
+  (with-tempo ((make-tempo 140))
     (with-key ('f-major)
       (closure ()
 	(seq (apply #'mapcar (lambda (a b c)
@@ -66,7 +66,7 @@
   (ldm +nr11+ #b01000000)
   (ldm +nr21+ #b01000000)
   (with-label :loop
-    (gb/play (event song-demo))
+    (gb/play song-demo)
     (jp (addr :loop)))
   
   ;; the message to display on screen

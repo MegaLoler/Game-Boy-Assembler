@@ -44,7 +44,7 @@
   (ldm reg (+ (* vol #x10)
 		 len
 		 (case dir
-		   (up #x1000)
+		   (up #b1000)
 		   (otherwise 0)))))
 
 (defun set-sq1-env (&optional (vol #xf) (len 0) (dir 'down))
@@ -120,7 +120,8 @@
      :for ev :in evs
      :for next :in (invert evs)
      :for duration = (- (ev-time next) (ev-time ev))
-     :when duration :do (funcall (fn ev))
+;     :when (> duration 0)
+     :do (funcall (fn ev))
      :do (dotimes (x (seconds-to-gb-frames duration)) (music-ret))))
 
 (defclass gb/event ()
@@ -139,22 +140,53 @@
     :fn (lambda () ,@body)
     :time ,time))
 
+(defun gb-env-timing (seconds vol-span)
+  "Get the envelope timing value for a given number of seconds."
+  (min 7 (max 0 (floor (/ (* seconds 64) vol-span)))))
+
 (defun make-gb-events (event)
   "Make a timed musical Game Boy event from a music event."
-  (list (gb/event (on-time event)
-	  (funcall (case (channel event)
-		     (0 #'play-freq-sq1)
-		     (1 #'play-freq-sq2)
-		     (t #'play-freq-wave))
-		   (* (frequency (note event))
-		      (case (channel event)
-			(2 2)
-			(otherwise 1)))
-		   t))
-	;; todo: an Actual note off
-	(gb/event (off-time event)
-	  (funcall (case (channel event)
-		     (0 #'play-freq-sq1)
-		     (1 #'play-freq-sq2)
-		     (t #'play-freq-wave))
-		   1))))
+  ;; later replace this with getting instrument from Event
+  (let* ((inst (make-gb-instrument))
+	 (slv (floor (* 15 (sustain (adsr inst))))))
+    (list (gb/event (on-time event)
+	    (case (channel event)
+	      (0 (set-sq1-env 0 (gb-env-timing (attack (adsr inst)) 15) 'up))
+	      (1 (set-sq2-env 0 (gb-env-timing (attack (adsr inst)) 15) 'up))
+	      (t (set-wave-out t)))
+	    (funcall (case (channel event)
+		       (0 #'play-freq-sq1)
+		       (1 #'play-freq-sq2)
+		       (t #'play-freq-wave))
+		     (* (frequency (note event))
+			(case (channel event)
+			  (2 2)
+			  (otherwise 1)))
+		     t))
+	  (gb/event (+ (on-time event) (attack (adsr inst)))
+	    (case (channel event)
+	      (0 (set-sq1-env 15 (gb-env-timing (decay (adsr inst)) (- 15 slv))))
+	      (1 (set-sq2-env 15 (gb-env-timing (decay (adsr inst)) (- 15 slv))))))
+	  (gb/event (+ (on-time event) (attack (adsr inst)) (decay (adsr inst)))
+	    (case (channel event)
+	      (0 (set-sq1-env slv 0))
+	      (1 (set-sq2-env slv 0))))
+	  (gb/event (off-time event)
+	    (case (channel event)
+	      (0 (set-sq1-env slv (gb-env-timing (attack (adsr inst)) slv)))
+	      (1 (set-sq2-env slv (gb-env-timing (attack (adsr inst)) slv)))
+	      (t (set-wave-out nil)))))))
+
+(defclass gb-instrument (adsr-instrument)
+  ((duty
+    :initarg :duty
+    :initform 1/2
+    :type (member 1/2 1/4 1/8)
+    :accessor duty))
+  (:documentation "A musical instrument to play on a Game Boy sound channel."))
+
+(defmacro make-gb-instrument (&optional args)
+  "Make a Game Boy instrument."
+  `(make-instance
+    'gb-instrument
+    ,@args))

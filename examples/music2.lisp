@@ -17,7 +17,7 @@
 		    do > r do ti la sol la r r fa r r sol fa re fa r mi do r r r r r)
 		  '(6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
 		    6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6)))))
-       (with-channel (1)
+       (with-channel (2)
 	 (with-reference-note ('c3)
 	   (closure ()
 	     (seq '(do ti la ti do ti (la ti) do)
