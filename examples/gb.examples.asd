@@ -4,7 +4,8 @@
   :serial t
   :components
   ((:file "hello")
-   (:file "music"))
+   (:file "music")
+   (:file "music2"))
   :depends-on
   (#:gb
    #:gb.assets

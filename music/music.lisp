@@ -101,27 +101,60 @@
     (ret)
     (label :ret)))
 
-(defmethod gb/play ((event event))
-  "Play a musical event."
-  (funcall (case (channel event)
-	     (0 #'play-freq-sq1)
-	     (1 #'play-freq-sq2)
-	     (t #'play-freq-wave))
-	   (* (frequency (note event))
-	      (case (channel event)
-		(2 2)
-		(otherwise 1)))
-	   t)
-  ;; this is just a dirty hack for now, gross and incredibly inefficient!
-  (when (= (channel event) 2)
-    (loop
-       :repeat (* 48 (- (off-time event) (on-time event)))
-       :do (music-ret))))
+(defun seconds-to-gb-frames (seconds)
+  "How many Game Boy frames occur in a number of seconds."
+  (floor (* seconds 60))) ;; idk if thats accurate
 
+;; be sure to replace the "dotimes" with much more efficient code in terms of space occupied
 (defmethod gb/play (object)
   "Play a musical object."
-  (gb/play (event object)))
+  (loop
+     :with unsorted = (loop
+			 :for event :in (music::flatten (event object))
+			 :append (make-gb-events event))
+     :with evs = (sort
+		  unsorted
+     		  (lambda (a b)
+     		    (< (ev-time a)
+     		       (ev-time b))))
+     :for ev :in evs
+     :for next :in (invert evs)
+     :for duration = (- (ev-time next) (ev-time ev))
+     :when duration :do (funcall (fn ev))
+     :do (dotimes (x (seconds-to-gb-frames duration)) (music-ret))))
 
-(defmethod gb/play ((list list))
-  "Play a list of musical objects."
-  (mapc #'gb/play list))
+(defclass gb/event ()
+  ((fn
+    :initarg :fn
+    :accessor fn)
+   (time
+    :initarg :time
+    :accessor ev-time))
+  (:documentation "A timed musical Game Boy event."))
+
+(defmacro gb/event (time &body body)
+  "Make a timed musical Game Boy event."
+  `(make-instance
+    'gb/event
+    :fn (lambda () ,@body)
+    :time ,time))
+
+(defun make-gb-events (event)
+  "Make a timed musical Game Boy event from a music event."
+  (list (gb/event (on-time event)
+	  (funcall (case (channel event)
+		     (0 #'play-freq-sq1)
+		     (1 #'play-freq-sq2)
+		     (t #'play-freq-wave))
+		   (* (frequency (note event))
+		      (case (channel event)
+			(2 2)
+			(otherwise 1)))
+		   t))
+	;; todo: an Actual note off
+	(gb/event (off-time event)
+	  (funcall (case (channel event)
+		     (0 #'play-freq-sq1)
+		     (1 #'play-freq-sq2)
+		     (t #'play-freq-wave))
+		   1))))

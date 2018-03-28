@@ -1,26 +1,30 @@
-(defpackage :gb.music-example
+(defpackage :gb.music-example-2
   (:shadowing-import-from :music a b c d e f h)
   (:shadowing-import-from :gb di)
   (:use :cl :gb :gb.assets :gb.music :music))
-(in-package :gb.music-example)
+(in-package :gb.music-example-2)
 
 (defsong (song-demo
-	  :title "Music Demo"
-	  :description "An example song for Game Boy.")
-  (with-tempo ((make-tempo 120))
-    (with-key ('f-major)
-      (closure ()
-	(seq (apply #'mapcar (lambda (a b c)
-			       (voices (list a b c)))
-		    (make-chorale
-		     (harmony '(I IV64 V43 I6 I6 IV IV I64 I64 V V65/vi V/vi
-				vi visus2 iiimin iv iidom7 I iimin7 I6 IV I64 Vsus4 V7))
-		     3))
-	     '(1/2 1 1 1/3 1 1 1 2/3 2 1/2 2/3 2
-	       1/2 1 1 1/3 1 1 1 1 1 1/2 1 1 1/4 1/4))))))
+	  :title "Music Demo 2"
+	  :description "Another example song for Game Boy.")
+  (with-tempo ((make-tempo 50))
+    (with-key ('d-major)
+      (list
+       (with-channel (0)
+	 (with-reference-note ('c4)
+	   (closure ()
+	     (seq '(do > r do ti la sol la r r fa r r sol r re sol fa re fa r sol mi r r
+		    do > r do ti la sol la r r fa r r sol fa re fa r mi do r r r r r)
+		  '(6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+		    6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6)))))
+       (with-channel (1)
+	 (with-reference-note ('c3)
+	   (closure ()
+	     (seq '(do ti la ti do ti (la ti) do)
+		  '(1 1 1 1 1 1 (2 2) 1)))))))))
 
-(with-gb-out (("../examples/music.gb" :vblank (addr :vblank))
-	      :title "Music Demo")
+(with-gb-out (("../examples/music2.gb" :vblank (addr :vblank))
+	      :title "More Music!")
   ;; setup some basics and disable lcd to be able to init vram
   (di)                           ;; disable interrupts
   (init-stack)                   ;; set the stack pointer (defaults to top of hram)
@@ -39,7 +43,7 @@
 
   ;; load bg map with a message
   (copy (addr :message)
-	(+ +map+ (* #x20 8) 5)
+	(+ +map+ (* #x20 8) 4)
 	(diff :message :message-end))
 
   ;; also init the music player
@@ -63,15 +67,16 @@
   (set-sq2-env 9 7)
   (set-wave-out 1)
   (set-wave-vol 2)
+  (ldm +nr51+ #b11011110)
   (ldm +nr11+ #b01000000)
   (ldm +nr21+ #b01000000)
   (with-label :loop
-    (gb/play (event song-demo))
+    (gb/play song-demo)
     (jp (addr :loop)))
   
   ;; the message to display on screen
   (label :message)
-  (text "MUSIC DEMO" *default-char-set*)
+  (text "MUSIC DEMO 2" *default-char-set*)
   (label :message-end)
 
   ;; the font data
